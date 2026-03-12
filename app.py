@@ -9,6 +9,7 @@ BITRIX_WEBHOOK_URL = "https://b24-idz4go.bitrix24.com.br/rest/1/qbwi1ie9uhhnehs3
 
 @app.route("/", methods=["GET"])
 def home():
+    print("Servidor recebeu uma requisição GET", flush=True)
     return jsonify({"status": "servidor online"}), 200
 
 @app.route("/webhook", methods=["POST"])

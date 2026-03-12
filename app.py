@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-WEBHOOK_TOKEN = "xsirrrj0uvncf8z6s41441riz5k2wjhk"
+WEBHOOK_TOKEN = "8vhpwln0t40oazqsr7xplsgf8umd9cy3"
 BITRIX_WEBHOOK_URL = "https://b24-idz4go.bitrix24.com.br/rest/1/qbwi1ie9uhhnehs3"
 
 @app.route("/", methods=["GET"])

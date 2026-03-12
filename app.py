@@ -25,29 +25,53 @@ def webhook():
     if token != WEBHOOK_TOKEN:
         return jsonify({"error": "Token inválido"}), 403
 
+    # ⚠️ Substitua pelo nome real do campo "ID Execução" no Bitrix24 (ex: UF_CRM_123456)
+    CAMPO_ID_EXECUCAO = "UF_CRM_1773240987269"
+
     # Pegando dados específicos do negócio
     event = data.get("event", "")
     fields = data.get("data", {}).get("FIELDS", {})
-    deal_id = fields.get("ID", "")
+    deal_id = str(fields.get("ID", ""))
 
     print(f"Evento: {event}", flush=True)
     print(f"ID do negócio: {deal_id}", flush=True)
     print(f"Dados completos: {data}", flush=True)
 
     if deal_id:
+        # Busca os dados completos do negócio para obter o ID Execução
         resp = requests.post(
             f"{BITRIX_WEBHOOK_URL}/crm.deal.get",
             json={"ID": deal_id}
         )
-        result = resp.json()
+        deal_data = resp.json().get("result", {})
+        execution_id = deal_data.get(CAMPO_ID_EXECUCAO, "")
 
-        if result.get("result"):  # negociação já existe no Bitrix
-            print(f"Negociação {deal_id} já existe. Deletando...", flush=True)
-            requests.post(
-                f"{BITRIX_WEBHOOK_URL}/crm.deal.delete",
-                json={"ID": deal_id}
+        print(f"ID Execução: {execution_id}", flush=True)
+
+        if execution_id:
+            # Busca todos os negócios com o mesmo ID Execução
+            resp_list = requests.post(
+                f"{BITRIX_WEBHOOK_URL}/crm.deal.list",
+                json={
+                    "filter": {CAMPO_ID_EXECUCAO: execution_id},
+                    "select": ["ID"]
+                }
             )
-            return jsonify({"status": "deletado", "deal_id": deal_id})
+            duplicates = resp_list.json().get("result", [])
+
+            deleted = []
+            for dup in duplicates:
+                dup_id = str(dup.get("ID", ""))
+                if dup_id == deal_id:  # deleta o negócio que disparou o evento, mantém os existentes
+                    print(f"Deletando negócio disparador {dup_id} com ID Execução '{execution_id}'", flush=True)
+                    requests.post(
+                        f"{BITRIX_WEBHOOK_URL}/crm.deal.delete",
+                        json={"ID": dup_id}
+                    )
+                    deleted.append(dup_id)
+
+            if deleted:
+                return jsonify({"status": "duplicatas_deletadas", "deal_id": deal_id, "deletados": deleted})
 
     return jsonify({"status": "ok", "deal_id": deal_id})
 

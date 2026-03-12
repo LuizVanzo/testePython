@@ -34,12 +34,11 @@ def webhook():
     if token != WEBHOOK_TOKEN:
         return jsonify({"error": "Token inválido"}), 403
 
-    # ⚠️ Substitua pelo nome real do campo "ID Execução" no Bitrix24 (ex: UF_CRM_123456)
+    # campo "ID Execução" no Bitrix24
     CAMPO_ID_EXECUCAO = "UF_CRM_1773240987269"
 
     # Pegando dados específicos do negócio
     event = data.get("event", "")
-    # Suporta tanto JSON aninhado quanto form data do Bitrix24
     fields = data.get("data", {}).get("FIELDS", {}) if isinstance(data.get("data"), dict) else {}
     deal_id = str(fields.get("ID", "") or data.get("data[FIELDS][ID]", ""))
 
@@ -48,7 +47,7 @@ def webhook():
     print(f"Dados completos: {data}", flush=True)
 
     if deal_id:
-        # Busca os dados completos do negócio para obter o ID Execução
+        # Busca nas negociações
         resp = requests.post(
             f"{BITRIX_WEBHOOK_URL}/crm.deal.get",
             json={"ID": deal_id}
@@ -69,19 +68,13 @@ def webhook():
             )
             duplicates = resp_list.json().get("result", [])
 
-            deleted = []
-            for dup in duplicates:
-                dup_id = str(dup.get("ID", ""))
-                if dup_id == deal_id:  # deleta o negócio que disparou o evento, mantém os existentes
-                    print(f"Deletando negócio disparador {dup_id} com ID Execução '{execution_id}'", flush=True)
-                    requests.post(
-                        f"{BITRIX_WEBHOOK_URL}/crm.deal.delete",
-                        json={"ID": dup_id}
-                    )
-                    deleted.append(dup_id)
-
-            if deleted:
-                return jsonify({"status": "duplicatas_deletadas", "deal_id": deal_id, "deletados": deleted})
+            if len(duplicates) > 1:
+                print(f"Deletando negócio disparador {deal_id} com ID Execução '{execution_id}'", flush=True)
+                requests.post(
+                    f"{BITRIX_WEBHOOK_URL}/crm.deal.delete",
+                    json={"ID": deal_id}
+                )
+                return jsonify({"status": "duplicata_deletada", "deal_id": deal_id})
 
     return jsonify({"status": "ok", "deal_id": deal_id})
 

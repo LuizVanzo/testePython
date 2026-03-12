@@ -4,7 +4,7 @@ import os
 app = Flask(__name__)
 
 # Pegue o token do webhook da variável de ambiente (mais seguro)
-WEBHOOK_TOKEN = os.environ.get("WEBHOOK_TOKEN", "0sn7bvn6qg0mkp4ae3ocgg6xh4i3e624")
+WEBHOOK_TOKEN = os.environ.get("WEBHOOK_TOKEN", "8vhpwln0t40oazqsr7xplsgf8umd9cy3")
 
 @app.route("/", methods=["POST"])
 def webhook():

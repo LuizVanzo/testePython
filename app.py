@@ -1,15 +1,24 @@
 from flask import Flask, request, jsonify
 import os
 import requests
+import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="%(asctime)s %(levelname)s %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-WEBHOOK_TOKEN = "8vhpwln0t40oazqsr7xplsgf8umd9cy3"
+WEBHOOK_TOKEN = "xsirrrj0uvncf8z6s41441riz5k2wjhk"
 BITRIX_WEBHOOK_URL = "https://b24-idz4go.bitrix24.com.br/rest/1/qbwi1ie9uhhnehs3"
 
 @app.route("/", methods=["GET"])
 def home():
-    print("Servidor recebeu uma requisição GET", flush=True)
+    logger.info("Servidor recebeu uma requisição GET")
     return jsonify({"status": "servidor online"}), 200
 
 @app.route("/webhook", methods=["POST"])

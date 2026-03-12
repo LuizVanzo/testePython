@@ -24,9 +24,8 @@ def home():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     logger.info("ROTA DE WEBHOOK ACIONADA")
-    data = request.json
-
-    # Bitrix pode enviar como form data também
+    
+    data = request.get_json(force=True, silent=True)
     if data is None:
         data = request.form.to_dict()
 

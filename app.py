@@ -14,7 +14,7 @@ def webhook():
     if token != WEBHOOK_TOKEN:
         return jsonify({"error": "Token inválido"}), 403
 
-    print("Novo negócio recebido:", data)
+    print("Novo negócio recebido:", data, flush=True)
     return jsonify({"status": "ok"})
 
 if __name__ == "__main__":

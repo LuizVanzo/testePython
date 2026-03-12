@@ -39,8 +39,9 @@ def webhook():
 
     # Pegando dados específicos do negócio
     event = data.get("event", "")
-    fields = data.get("data", {}).get("FIELDS", {})
-    deal_id = str(fields.get("ID", ""))
+    # Suporta tanto JSON aninhado quanto form data do Bitrix24
+    fields = data.get("data", {}).get("FIELDS", {}) if isinstance(data.get("data"), dict) else {}
+    deal_id = str(fields.get("ID", "") or data.get("data[FIELDS][ID]", ""))
 
     print(f"Evento: {event}", flush=True)
     print(f"ID do negócio: {deal_id}", flush=True)
